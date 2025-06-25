@@ -1,0 +1,9 @@
+name: Extras-ipk
+
+on:
+  repository_dispatch:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
