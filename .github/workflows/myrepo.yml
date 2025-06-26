@@ -39,7 +39,9 @@ jobs:
         cd myrepo
         usign -S -m Packages -s my-private.key
         gzip -9nc Packages > Packages.gz
+        cd ..
         rm -rf ipkg-make-index.sh
+        rm -rf usign
 
     - name: Git push
       run: |
