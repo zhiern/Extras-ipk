@@ -30,6 +30,7 @@ jobs:
     - name: Download plugin
       run: | 
         mkdir -p myrepo && wget -O - https://github.com/zhiern/openwrt-package/releases/download/openwrt-24.10-x86_64/x86_64.tar.gz | tar -xz -C myrepo
+        wget -O - https://github.com/zhiern/openwrt-package/releases/download/Helloworld-openwrt-24.10-x86_64/x86_64.tar.gz | tar -xz -C myrepo
         wget -O myrepo/my-private.key https://raw.githubusercontent.com/zhiern/ipkg-make-index/refs/heads/main/my-private.key
         wget -O myrepo/my-private.key.pub https://raw.githubusercontent.com/zhiern/ipkg-make-index/refs/heads/main/my-private.key.pub
 
