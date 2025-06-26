@@ -35,7 +35,7 @@ jobs:
 
     - name: Perform indexing operations
       run: |
-        ./ipkg-make-index.sh ~/myrepo > ~/myrepo/Packages
+        ./ipkg-make-index.sh myrepo > myrepo/Packages
         cd myrepo
         usign -S -m Packages -s my-private.key
         gzip -9nc Packages > Packages.gz
