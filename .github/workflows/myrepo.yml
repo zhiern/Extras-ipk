@@ -19,6 +19,7 @@ jobs:
     - name: Install usign
       run: |
         git clone https://git.kejizero.online/zhao/usign
+        cd usign
         mkdir build && cd build && cmake .. && make && sudo make install
 
     - name: Download index file
