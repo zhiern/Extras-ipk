@@ -1,0 +1,51 @@
+name: myrepo
+
+on:
+  workflow_dispatch:
+  repository_dispatch:
+    types: [sync]
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@main
+
+    - name: Install usign
+      run: |
+        git clone https://git.kejizero.online/zhao/usign
+        mkdir build && cd build && cmake .. && make && sudo make install
+
+    - name: Download index file
+      run: | 
+        wget -O ipkg-make-index.sh https://raw.githubusercontent.com/zhiern/ipkg-make-index/refs/heads/main/ipkg-make-index.sh
+        chmod +x ipkg-make-index.sh
+
+    - name: Download plugin
+      run: | 
+        mkdir -p myrepo && wget -O - https://github.com/zhiern/openwrt-package/releases/download/openwrt-24.10-x86_64/x86_64.tar.gz | tar -xz -C myrepo
+        wget -O myrepo/my-private.key https://raw.githubusercontent.com/zhiern/ipkg-make-index/refs/heads/main/my-private.key
+        wget -O myrepo/my-private.key.pub https://raw.githubusercontent.com/zhiern/ipkg-make-index/refs/heads/main/my-private.key.pub
+
+    - name: Perform indexing operations
+      run: |
+        ./ipkg-make-index.sh ~/myrepo > ~/myrepo/Packages
+        cd myrepo
+        usign -S -m Packages -s my-private.key
+        gzip -9nc Packages > Packages.gz
+        rm -rf ipkg-make-index.sh
+
+    - name: Git push
+      run: |
+        sudo timedatectl set-timezone 'Asia/Shanghai'
+        git config --global user.name 'actions'
+        git config --global user.email 'action@github.com'
+        [ -d .git ] && git init
+        git add --all
+        git commit -sm "更新插件版本"
+        git push "https://${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}" HEAD:x86_64
