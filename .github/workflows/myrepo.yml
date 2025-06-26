@@ -49,7 +49,8 @@ jobs:
         git config --global user.name 'actions'
         git config --global user.email 'action@github.com'
         mkdir push-dir
-        cp -r myrepo/* push-dir/
+        mkdir -p push-dir/myrepo
+        cp -r myrepo/* push-dir/myrepo/
         cd push-dir
         git init
         git checkout -b x86_64
