@@ -67,7 +67,7 @@ jobs:
         cp -r myrepo/* push-dir/myrepo/
         cd push-dir
         git init
-        git checkout -b x86_64
+        git checkout -b ${{ matrix.target }}
         git add .
         git commit -m "更新插件版本"
         git push --force "https://${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}" ${{ matrix.target }}
