@@ -48,7 +48,11 @@ jobs:
         sudo timedatectl set-timezone 'Asia/Shanghai'
         git config --global user.name 'actions'
         git config --global user.email 'action@github.com'
-        [ -d .git ] && git init
-        git add --all
-        git commit -sm "更新插件版本"
-        git push "https://${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}" HEAD:x86_64
+        mkdir push-dir
+        cp -r myrepo/* push-dir/
+        cd push-dir
+        git init
+        git checkout -b x86_64
+        git add .
+        git commit -m "更新插件版本"
+        git push --force "https://${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}" x86_64
