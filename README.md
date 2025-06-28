@@ -51,4 +51,4 @@
 | luci-app-wrtbwmon | 流量监控 |
 
 ### Stargazers Over Time
-[![Stargazers Over Time](https://starchart.cc/zhiern/openwrt-package.svg)](https://starchart.cc/zhiern/openwrt-package)
+[![Stargazers over time](https://starchart.cc/zhiern/openwrt-package.svg?variant=adaptive)](https://starchart.cc/zhiern/openwrt-package)
