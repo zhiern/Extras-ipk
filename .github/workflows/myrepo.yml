@@ -71,5 +71,5 @@ jobs:
         username: ${{ secrets.ftp_username }}
         password: ${{ secrets.ftp_password }}
         server-dir: myrepo/
-        local-dir: opkg/${{ matrix.target }}/
+        local-dir: opkg/openwrt-24.10/${{ matrix.target }}/
         dangerous-clean-slate: true
