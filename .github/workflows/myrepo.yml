@@ -17,6 +17,7 @@ jobs:
     strategy:
       matrix:
         target:
+          - aarch64_cortex-a53
           - aarch64_generic
           - x86_64
           
@@ -45,6 +46,10 @@ jobs:
         mkdir -p myrepo && wget -O - https://github.com/zhiern/openwrt-package/releases/download/openwrt-24.10-x86_64/x86_64.tar.gz | tar -xz -C myrepo
         wget -O - https://github.com/zhiern/openwrt-package/releases/download/Helloworld-openwrt-24.10-x86_64/x86_64.tar.gz | tar -xz -C myrepo
         wget -O - https://github.com/zhiern/openwrt-package/releases/download/linkease-openwrt-24.10-x86_64/x86_64.tar.gz | tar -xz -C myrepo
+        elif [ "${{ matrix.target }}" = "aarch64_cortex-a53" ]; then
+        mkdir -p myrepo && wget -O - https://github.com/zhiern/openwrt-package/releases/download/openwrt-24.10-aarch64_cortex-a53/aarch64_cortex-a53.tar.gz | tar -xz -C myrepo
+        wget -O - https://github.com/zhiern/openwrt-package/releases/download/linkease-openwrt-24.10-aarch64_cortex-a53/aarch64_cortex-a53.tar.gz | tar -xz -C myrepo
+        wget -O - https://github.com/zhiern/openwrt-package/releases/download/Helloworld-openwrt-24.10-aarch64_cortex-a53/aarch64_cortex-a53 | tar -xz -C myrepo
         fi
         wget -O myrepo/my-private.key https://raw.githubusercontent.com/zhiern/ipkg-make-index/refs/heads/main/my-private.key
         wget -O myrepo/my-private.key.pub https://raw.githubusercontent.com/zhiern/ipkg-make-index/refs/heads/main/my-private.key.pub
@@ -59,17 +64,12 @@ jobs:
         rm -rf ipkg-make-index.sh
         rm -rf usign
 
-    - name: Git push
-      run: |
-        sudo timedatectl set-timezone 'Asia/Shanghai'
-        git config --global user.name 'actions'
-        git config --global user.email 'action@github.com'
-        mkdir push-dir
-        mkdir -p push-dir/myrepo
-        cp -r myrepo/* push-dir/myrepo/
-        cd push-dir
-        git init
-        git checkout -b ${{ matrix.target }}
-        git add .
-        git commit -m "更新插件版本"
-        git push --force "https://${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}" ${{ matrix.target }}
+    - name: Upload OTA File to FTP
+      uses: zhiern/FTP-Deploy-Action@master
+      with:
+        server: ${{ secrets.ftp_address }}
+        username: ${{ secrets.ftp_username }}
+        password: ${{ secrets.ftp_password }}
+        server-dir: myrepo/
+        local-dir: opkg/${{ matrix.target }}/
+        dangerous-clean-slate: true
