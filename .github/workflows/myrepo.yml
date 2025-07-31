@@ -18,8 +18,8 @@ jobs:
       matrix:
         target:
           - aarch64_cortex-a53
-#          - aarch64_generic
-#          - x86_64
+          - aarch64_generic
+          - x86_64
           
     steps:
     - name: Checkout
@@ -64,12 +64,24 @@ jobs:
         rm -rf ipkg-make-index.sh
         rm -rf usign
 
-    - name: Upload OTA File to FTP
-      uses: zhiern/FTP-Deploy-Action@master
+#    - name: Upload OTA File to FTP
+#      uses: zhiern/FTP-Deploy-Action@master
+#      with:
+#        server: ${{ secrets.ftp_address }}
+#        username: ${{ secrets.ftp_username }}
+#        password: ${{ secrets.ftp_password }}
+#        server-dir: opkg/openwrt-24.10/${{ matrix.target }}/
+#        local-dir: myrepo/
+#        dangerous-clean-slate: true
+
+    - name: Create release
+      continue-on-error: true
+      uses: ncipollo/release-action@v1
       with:
-        server: ${{ secrets.ftp_address }}
-        username: ${{ secrets.ftp_username }}
-        password: ${{ secrets.ftp_password }}
-        server-dir: opkg/openwrt-24.10/${{ matrix.target }}/
-        local-dir: myrepo/
-        dangerous-clean-slate: true
+        name: ${{ matrix.target }}
+        allowUpdates: true
+        tag: ${{ matrix.target }}
+        commit: main
+        replacesArtifacts: true
+        token: ${{ secrets.GITHUB_TOKEN }}
+        artifacts: myrepo/
