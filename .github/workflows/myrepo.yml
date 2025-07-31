@@ -63,6 +63,7 @@ jobs:
         cd ..
         rm -rf ipkg-make-index.sh
         rm -rf usign
+        tar -czvf myrepo.tar.gz myrepo
 
 #    - name: Upload OTA File to FTP
 #      uses: zhiern/FTP-Deploy-Action@master
@@ -84,4 +85,4 @@ jobs:
         commit: main
         replacesArtifacts: true
         token: ${{ secrets.GITHUB_TOKEN }}
-        artifacts: myrepo/
+        artifacts: myrepo.tar.gz
