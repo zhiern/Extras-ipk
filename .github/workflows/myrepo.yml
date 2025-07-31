@@ -18,8 +18,8 @@ jobs:
       matrix:
         target:
           - aarch64_cortex-a53
-          - aarch64_generic
-          - x86_64
+#          - aarch64_generic
+#          - x86_64
           
     steps:
     - name: Checkout
