@@ -56,33 +56,17 @@ jobs:
 
     - name: Perform indexing operations
       run: |
-        ./ipkg-make-index.sh myrepo > myrepo/Packages
-        cd myrepo
-        usign -S -m Packages -s my-private.key
-        gzip -9nc Packages > Packages.gz
-        cd ..
-        rm -rf ipkg-make-index.sh
-        rm -rf usign
-        tar -czvf myrepo.tar.gz myrepo
+        wget -O key.tar.gz "https://github.com/zhiern/ZeroWrt/raw/refs/heads/openwrt-24.10/openwrt/patch/key.tar.gz"
+        tar -xzvf key.tar.gz
+        
 
-#    - name: Upload OTA File to FTP
-#      uses: zhiern/FTP-Deploy-Action@master
-#      with:
-#        server: ${{ secrets.ftp_address }}
-#        username: ${{ secrets.ftp_username }}
-#        password: ${{ secrets.ftp_password }}
-#        server-dir: opkg/openwrt-24.10/${{ matrix.target }}/
-#        local-dir: myrepo/
-#        dangerous-clean-slate: true
 
-    - name: Create release
-      continue-on-error: true
-      uses: ncipollo/release-action@v1
+    - name: Upload OTA File to FTP
+      uses: zhiern/FTP-Deploy-Action@master
       with:
-        name: ${{ matrix.target }}
-        allowUpdates: true
-        tag: ${{ matrix.target }}
-        commit: main
-        replacesArtifacts: true
-        token: ${{ secrets.GITHUB_TOKEN }}
-        artifacts: myrepo.tar.gz
+        server: ${{ secrets.ftp_address }}
+        username: ${{ secrets.ftp_username }}
+        password: ${{ secrets.ftp_password }}
+        server-dir: opkg/openwrt-24.10/${{ matrix.target }}/
+        local-dir: myrepo/
+        dangerous-clean-slate: true
