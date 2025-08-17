@@ -51,16 +51,15 @@ jobs:
         wget -O - https://github.com/zhiern/openwrt-package/releases/download/linkease-openwrt-24.10-aarch64_cortex-a53/aarch64_cortex-a53.tar.gz | tar -xz -C myrepo
         wget -O - https://github.com/zhiern/openwrt-package/releases/download/Helloworld-openwrt-24.10-aarch64_cortex-a53/aarch64_cortex-a53.tar.gz | tar -xz -C myrepo
         fi
-        wget -O myrepo/my-private.key https://raw.githubusercontent.com/zhiern/ipkg-make-index/refs/heads/main/my-private.key
-        wget -O myrepo/my-private.key.pub https://raw.githubusercontent.com/zhiern/ipkg-make-index/refs/heads/main/my-private.key.pub
 
     - name: Perform indexing operations
       run: |
         wget -O key.tar.gz "https://github.com/zhiern/ZeroWrt/raw/refs/heads/openwrt-24.10/openwrt/patch/key.tar.gz"
+        wget -O mkhash "https://github.com/zhiern/Extras-ipk/releases/download/mkhash/mkhash"
         tar -xzvf key.tar.gz
+        sed -i 's|export PATH="$TOP/staging_dir/host/bin:$PATH"|export PATH="$(pwd):$PATH"|' kmod-sign
+        bash kmod-sign myrepo
         
-
-
     - name: Upload OTA File to FTP
       uses: zhiern/FTP-Deploy-Action@master
       with:
