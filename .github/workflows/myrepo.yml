@@ -17,7 +17,6 @@ jobs:
     strategy:
       matrix:
         target:
-          - aarch64_cortex-a53
           - aarch64_generic
           - x86_64
           
@@ -46,10 +45,6 @@ jobs:
         mkdir -p myrepo && wget -O - https://github.com/zhiern/openwrt-package/releases/download/openwrt-24.10-x86_64/x86_64.tar.gz | tar -xz -C myrepo
         wget -O - https://github.com/zhiern/openwrt-package/releases/download/Helloworld-openwrt-24.10-x86_64/x86_64.tar.gz | tar -xz -C myrepo
         wget -O - https://github.com/zhiern/openwrt-package/releases/download/linkease-openwrt-24.10-x86_64/x86_64.tar.gz | tar -xz -C myrepo
-        elif [ "${{ matrix.target }}" = "aarch64_cortex-a53" ]; then
-        mkdir -p myrepo && wget -O - https://github.com/zhiern/openwrt-package/releases/download/openwrt-24.10-aarch64_cortex-a53/aarch64_cortex-a53.tar.gz | tar -xz -C myrepo
-        wget -O - https://github.com/zhiern/openwrt-package/releases/download/linkease-openwrt-24.10-aarch64_cortex-a53/aarch64_cortex-a53.tar.gz | tar -xz -C myrepo
-        wget -O - https://github.com/zhiern/openwrt-package/releases/download/Helloworld-openwrt-24.10-aarch64_cortex-a53/aarch64_cortex-a53.tar.gz | tar -xz -C myrepo
         fi
 
     - name: Perform indexing operations
