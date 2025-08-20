@@ -84,15 +84,6 @@ jobs:
         ./ipkg-make-index.sh $REPO_DIR > $REPO_DIR/Packages
         gzip -9c $REPO_DIR/Packages > $REPO_DIR/Packages.gz
 
-    - name: Clean and prepare branch
-      run: |
-        # 删除当前分支的所有文件（保留.git目录）
-        find . -mindepth 1 -maxdepth 1 ! -name '.git' -exec rm -rf {} +
-        
-        # 将日期文件夹中的所有内容移动到当前目录
-        mv $REPO_DIR/* .
-        rm -rf $REPO_DIR
-
     - name: Commit and push changes
       run: |
         git config --local user.name "zhiern"
