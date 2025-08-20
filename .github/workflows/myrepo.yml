@@ -38,13 +38,17 @@ jobs:
     - name: Download plugin
       run: | 
         if [ "${{ matrix.target }}" = "aarch64_generic" ]; then
-        mkdir -p myrepo && wget -O - https://github.com/zhiern/openwrt-package/releases/download/openwrt-24.10-aarch64_generic/aarch64_generic.tar.gz | tar -xz -C myrepo
-        wget -O - https://github.com/zhiern/openwrt-package/releases/download/Helloworld-openwrt-24.10-aarch64_generic/aarch64_generic.tar.gz | tar -xz -C myrepo
-        wget -O - https://github.com/zhiern/openwrt-package/releases/download/linkease-openwrt-24.10-aarch64_generic/aarch64_generic.tar.gz | tar -xz -C myrepo
+            current_date=$(date +%Y%m%d)
+            mkdir -p "$current_date" && 
+            wget -O - https://github.com/zhiern/openwrt-package/releases/download/openwrt-24.10-aarch64_generic/aarch64_generic.tar.gz | tar -xz -C "$current_date" &&
+            wget -O - https://github.com/zhiern/openwrt-package/releases/download/Helloworld-openwrt-24.10-aarch64_generic/aarch64_generic.tar.gz | tar -xz -C "$current_date" &&
+            wget -O - https://github.com/zhiern/openwrt-package/releases/download/linkease-openwrt-24.10-aarch64_generic/aarch64_generic.tar.gz | tar -xz -C "$current_date"
         elif [ "${{ matrix.target }}" = "x86_64" ]; then
-        mkdir -p myrepo && wget -O - https://github.com/zhiern/openwrt-package/releases/download/openwrt-24.10-x86_64/x86_64.tar.gz | tar -xz -C myrepo
-        wget -O - https://github.com/zhiern/openwrt-package/releases/download/Helloworld-openwrt-24.10-x86_64/x86_64.tar.gz | tar -xz -C myrepo
-        wget -O - https://github.com/zhiern/openwrt-package/releases/download/linkease-openwrt-24.10-x86_64/x86_64.tar.gz | tar -xz -C myrepo
+            current_date=$(date +%Y%m%d)
+            mkdir -p "$current_date" && 
+            wget -O - https://github.com/zhiern/openwrt-package/releases/download/openwrt-24.10-x86_64/x86_64.tar.gz | tar -xz -C "$current_date" &&
+            wget -O - https://github.com/zhiern/openwrt-package/releases/download/Helloworld-openwrt-24.10-x86_64/x86_64.tar.gz | tar -xz -C "$current_date" &&
+            wget -O - https://github.com/zhiern/openwrt-package/releases/download/linkease-openwrt-24.10-x86_64/x86_64.tar.gz | tar -xz -C "$current_date"
         fi
 
     - name: Perform indexing operations
@@ -53,9 +57,9 @@ jobs:
         wget -O mkhash "https://github.com/zhiern/Extras-ipk/releases/download/mkhash/mkhash"
         tar -xzvf key.tar.gz
         sed -i 's|export PATH="$TOP/staging_dir/host/bin:$PATH"|export PATH="$(pwd):$PATH"|' kmod-sign
-        bash kmod-sign myrepo
-        echo "RELEASE_NAME=myrepo" >> "$GITHUB_ENV"
-        echo myrepo 
+        bash kmod-sign "$current_date"
+        echo "RELEASE_NAME=$current_date" >> "$GITHUB_ENV"
+        echo $current_date
         
     - name: Git push
       continue-on-error: true
