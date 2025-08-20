@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+
+TOP=$(pwd)
+IPK=$(pwd)/kmod-ipk
+export PATH="/home/runner/work/Extras-ipk/Extras-ipk:$PATH"
+
+SIG() (
+    rm -f Packages Packages.sig Packages.gz Packages.manifest
+    $IPK . 2>&1 > Packages.manifest
+    grep -vE '^(Maintainer|LicenseFiles|Source|SourceName|Require|SourceDateEpoch)' Packages.manifest > Packages
+    usign -S -m Packages -s $TOP/key-build -x Packages.sig
+    gzip -c Packages > Packages.gz
+)
+
+[ -z $1 ] && exit 1
+
+cd $1
+SIG
