@@ -46,8 +46,8 @@ jobs:
         elif [ "${{ matrix.target }}" = "x86_64" ]; then
             current_date=$(date +%Y%m%d)
             mkdir -p "$current_date" && 
-            wget -O - https://github.com/zhiern/openwrt-package/releases/download/openwrt-24.10-x86_64/x86_64.tar.gz | tar -xz -C $current_date &&
-            wget -O - https://github.com/zhiern/openwrt-package/releases/download/Helloworld-openwrt-24.10-x86_64/x86_64.tar.gz | tar -xz -C $current_date &&
+            wget -O - https://github.com/zhiern/openwrt-package/releases/download/openwrt-24.10-x86_64/x86_64.tar.gz | tar -xz -C $current_date
+            wget -O - https://github.com/zhiern/openwrt-package/releases/download/Helloworld-openwrt-24.10-x86_64/x86_64.tar.gz | tar -xz -C $current_date
             wget -O - https://github.com/zhiern/openwrt-package/releases/download/linkease-openwrt-24.10-x86_64/x86_64.tar.gz | tar -xz -C $current_date
         fi
 
