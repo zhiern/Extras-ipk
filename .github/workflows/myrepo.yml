@@ -18,12 +18,14 @@ jobs:
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
+      with:
+        ref: ${{ matrix.target }}
+        fetch-depth: 0
 
     - name: Setup environment
       run: |
-        # 安装必要的依赖
         sudo apt-get update
-        sudo apt-get install -y cmake build-essential wget tar
+        sudo apt-get install -y cmake build-essential wget tar gzip
 
     - name: Install usign
       run: |
@@ -39,74 +41,74 @@ jobs:
         REPO_DIR=$(date +%Y%m%d)
         echo "REPO_DIR=$REPO_DIR" >> $GITHUB_ENV
         
-        # 根据架构选择下载URL
         if [ "${{ matrix.target }}" = "aarch64_generic" ]; then
             ARCH="aarch64_generic"
-            URL_PREFIX="https://github.com/zhiern/openwrt-package/releases/download"
         elif [ "${{ matrix.target }}" = "x86_64" ]; then
             ARCH="x86_64"
-            URL_PREFIX="https://github.com/zhiern/openwrt-package/releases/download"
         fi
 
+        URL_PREFIX="https://github.com/zhiern/openwrt-package/releases/download"
+        
+        # 清理并创建目录
+        rm -rf $REPO_DIR
         mkdir -p $REPO_DIR
         
-        # 下载并解压三个包
+        # 下载并解压包
         wget -q --show-progress -O - $URL_PREFIX/openwrt-24.10-$ARCH/$ARCH.tar.gz | tar -xz -C $REPO_DIR
         wget -q --show-progress -O - $URL_PREFIX/Helloworld-openwrt-24.10-$ARCH/$ARCH.tar.gz | tar -xz -C $REPO_DIR
         wget -q --show-progress -O - $URL_PREFIX/linkease-openwrt-24.10-$ARCH/$ARCH.tar.gz | tar -xz -C $REPO_DIR
 
-        echo "Downloaded packages to $REPO_DIR"
-
     - name: Setup signing tools
       run: |
-        # 下载签名工具
         wget -q --show-progress -O mkhash "https://github.com/zhiern/Extras-ipk/releases/download/mkhash/mkhash"
         chmod +x mkhash
         
         wget -q --show-progress -O key.tar.gz "https://github.com/zhiern/ZeroWrt/raw/refs/heads/openwrt-24.10/openwrt/patch/key.tar.gz"
         tar -xzf key.tar.gz
         
-        # 下载索引脚本
         wget -q --show-progress -O ipkg-make-index.sh "https://raw.githubusercontent.com/zhiern/ipkg-make-index/main/ipkg-make-index.sh"
         chmod +x ipkg-make-index.sh
 
-    - name: Sign packages
+    - name: Sign packages and generate index
       run: |
-        # 设置PATH包含当前目录
         export PATH="$PWD:$PATH"
         
-        # 修改kmod-sign脚本中的PATH设置
+        # 修改kmod-sign脚本
         sed -i 's|export PATH=".*"|export PATH="'"$PWD"':$PATH"|' kmod-sign
         chmod +x kmod-sign
         
         # 签名包
-        echo "Signing packages in $REPO_DIR"
         ./kmod-sign $REPO_DIR
         
         # 生成包索引
-        echo "Generating package index"
         ./ipkg-make-index.sh $REPO_DIR > $REPO_DIR/Packages
         gzip -9c $REPO_DIR/Packages > $REPO_DIR/Packages.gz
 
-    - name: Commit and push
+    - name: Commit and push changes
       run: |
-        git config --local user.name "github-actions[bot]"
-        git config --local user.email "github-actions[bot]@users.noreply.github.com"
+        git config --local user.name "zhiern"
+        git config --local user.email "2519840456@qq.com"
+        
+        # 拉取远程最新更改（强制覆盖本地）
+        git fetch origin ${{ matrix.target }}
+        git reset --hard origin/${{ matrix.target }}
+        
+        # 删除旧的日期目录（如果有）
+        find . -maxdepth 1 -type d -name "20*" -exec rm -rf {} + 2>/dev/null || true
         
         # 添加所有文件
         git add --all
         
-        # 检查是否有更改需要提交
+        # 检查是否有更改
         if git diff --cached --quiet; then
             echo "No changes to commit"
         else
             git commit -m "Update ${{ matrix.target }} packages - $(date +%Y%m%d)"
-            git push "https://${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}" HEAD:${{ matrix.target }}
+            # 强制推送（覆盖远程分支）
+            git push --force "https://zhiern:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}" HEAD:${{ matrix.target }}
         fi
 
-    - name: Show directory structure
+    - name: Verify push result
       run: |
-        echo "Final directory structure:"
-        find . -maxdepth 2 -type d -name "20*" -exec ls -la {} \;
-        echo "Packages content:"
-        ls -la $REPO_DIR/
+        echo "Successfully pushed to ${{ matrix.target }} branch"
+        ls -la
