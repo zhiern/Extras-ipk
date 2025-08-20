@@ -1,4 +1,4 @@
-name: Package Repository Builder
+name: myrepo
 
 on:
   workflow_dispatch:
@@ -11,100 +11,56 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-24.04
+    defaults:
+      run:
+        shell: bash
     strategy:
       matrix:
-        target: [aarch64_generic, x86_64]
+        target:
+          - aarch64_generic
+          - x86_64
           
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
-      with:
-        ref: ${{ matrix.target }}
-        fetch-depth: 0
-
-    - name: Setup environment
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y cmake build-essential wget tar gzip
+    - name: Checkout
+      uses: actions/checkout@main
 
     - name: Install usign
       run: |
-        git clone https://git.kejizero.online/zhao/usign.git
+        git clone https://git.kejizero.online/zhao/usign
         cd usign
-        mkdir build && cd build
-        cmake .. && make -j$(nproc)
-        sudo make install
-        cd ../..
+        mkdir build && cd build && cmake .. && make && sudo make install
 
-    - name: Download packages
-      run: |
-        REPO_DIR=$(date +%Y%m%d)
-        echo "REPO_DIR=$REPO_DIR" >> $GITHUB_ENV
-        
-        if [ "${{ matrix.target }}" = "aarch64_generic" ]; then
-            ARCH="aarch64_generic"
-        elif [ "${{ matrix.target }}" = "x86_64" ]; then
-            ARCH="x86_64"
-        fi
-
-        URL_PREFIX="https://github.com/zhiern/openwrt-package/releases/download"
-        
-        # 清理并创建目录
-        rm -rf $REPO_DIR
-        mkdir -p $REPO_DIR
-        
-        # 下载并解压包
-        wget -q --show-progress -O - $URL_PREFIX/openwrt-24.10-$ARCH/$ARCH.tar.gz | tar -xz -C $REPO_DIR
-        wget -q --show-progress -O - $URL_PREFIX/Helloworld-openwrt-24.10-$ARCH/$ARCH.tar.gz | tar -xz -C $REPO_DIR
-        wget -q --show-progress -O - $URL_PREFIX/linkease-openwrt-24.10-$ARCH/$ARCH.tar.gz | tar -xz -C $REPO_DIR
-
-    - name: Setup signing tools
-      run: |
-        wget -q --show-progress -O mkhash "https://github.com/zhiern/Extras-ipk/releases/download/mkhash/mkhash"
-        chmod +x mkhash
-        
-        wget -q --show-progress -O key.tar.gz "https://github.com/zhiern/ZeroWrt/raw/refs/heads/openwrt-24.10/openwrt/patch/key.tar.gz"
-        tar -xzf key.tar.gz
-        
-        wget -q --show-progress -O ipkg-make-index.sh "https://raw.githubusercontent.com/zhiern/ipkg-make-index/main/ipkg-make-index.sh"
+    - name: Download index file
+      run: | 
+        wget -O ipkg-make-index.sh https://raw.githubusercontent.com/zhiern/ipkg-make-index/refs/heads/main/ipkg-make-index.sh
         chmod +x ipkg-make-index.sh
 
-    - name: Sign packages and generate index
-      run: |
-        export PATH="$PWD:$PATH"
-        
-        # 修改kmod-sign脚本
-        sed -i 's|export PATH=".*"|export PATH="'"$PWD"':$PATH"|' kmod-sign
-        chmod +x kmod-sign
-        
-        # 签名包
-        ./kmod-sign $REPO_DIR
-        
-        # 生成包索引
-        ./ipkg-make-index.sh $REPO_DIR > $REPO_DIR/Packages
-        gzip -9c $REPO_DIR/Packages > $REPO_DIR/Packages.gz
-
-    - name: Commit and push changes
-      run: |
-        git config --local user.name "zhiern"
-        git config --local user.email "2519840456@qq.com"
-        
-        # 添加所有文件
-        git add --all
-        
-        # 检查是否有更改
-        if git diff --cached --quiet; then
-            echo "No changes to commit"
-        else
-            git commit -m "Update ${{ matrix.target }} packages - $(date +%Y%m%d)"
-            # 强制推送到目标分支
-            git push --force "https://zhiern:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}" HEAD:${{ matrix.target }}
+    - name: Download plugin
+      run: | 
+        if [ "${{ matrix.target }}" = "aarch64_generic" ]; then
+        mkdir -p myrepo && wget -O - https://github.com/zhiern/openwrt-package/releases/download/openwrt-24.10-aarch64_generic/aarch64_generic.tar.gz | tar -xz -C myrepo
+        wget -O - https://github.com/zhiern/openwrt-package/releases/download/Helloworld-openwrt-24.10-aarch64_generic/aarch64_generic.tar.gz | tar -xz -C myrepo
+        wget -O - https://github.com/zhiern/openwrt-package/releases/download/linkease-openwrt-24.10-aarch64_generic/aarch64_generic.tar.gz | tar -xz -C myrepo
+        elif [ "${{ matrix.target }}" = "x86_64" ]; then
+        mkdir -p myrepo && wget -O - https://github.com/zhiern/openwrt-package/releases/download/openwrt-24.10-x86_64/x86_64.tar.gz | tar -xz -C myrepo
+        wget -O - https://github.com/zhiern/openwrt-package/releases/download/Helloworld-openwrt-24.10-x86_64/x86_64.tar.gz | tar -xz -C myrepo
+        wget -O - https://github.com/zhiern/openwrt-package/releases/download/linkease-openwrt-24.10-x86_64/x86_64.tar.gz | tar -xz -C myrepo
         fi
 
-    - name: Verify push result
+    - name: Perform indexing operations
       run: |
-        echo "Successfully pushed to ${{ matrix.target }} branch"
-        echo "Current directory contents:"
-        ls -la
-        echo "Packages files:"
-        ls -la Packages*
+        wget -O key.tar.gz "https://github.com/zhiern/ZeroWrt/raw/refs/heads/openwrt-24.10/openwrt/patch/key.tar.gz"
+        wget -O mkhash "https://github.com/zhiern/Extras-ipk/releases/download/mkhash/mkhash"
+        tar -xzvf key.tar.gz
+        sed -i 's|export PATH="$TOP/staging_dir/host/bin:$PATH"|export PATH="$(pwd):$PATH"|' kmod-sign
+        bash kmod-sign myrepo
+        
+    - name: Upload OTA File to FTP
+      uses: zhiern/FTP-Deploy-Action@master
+      with:
+        server: ${{ secrets.ftp_address }}
+        username: ${{ secrets.ftp_username }}
+        password: ${{ secrets.ftp_password }}
+        server-dir: opkg/openwrt-24.10/${{ matrix.target }}/
+        local-dir: myrepo/
+        dangerous-clean-slate: true
