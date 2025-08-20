@@ -58,8 +58,6 @@ jobs:
         tar -xzvf key.tar.gz
         sed -i 's|export PATH="$TOP/staging_dir/host/bin:$PATH"|export PATH="$(pwd):$PATH"|' kmod-sign
         bash kmod-sign $current_date
-        echo "RELEASE_NAME=$current_date" >> "$GITHUB_ENV"
-        echo $current_date
         
     - name: Git push
       continue-on-error: true
@@ -68,5 +66,5 @@ jobs:
         git config --local user.email "2519840456@qq.com"
         [ -d .git ] && git init
         git add --all
-        git commit -sm "${{ env.RELEASE_NAME }}"
+        git commit -sm "$current_date"
         git push "https://${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}" HEAD:${{ matrix.target }}
