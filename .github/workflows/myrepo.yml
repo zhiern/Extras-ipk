@@ -54,13 +54,15 @@ jobs:
         tar -xzvf key.tar.gz
         sed -i 's|export PATH="$TOP/staging_dir/host/bin:$PATH"|export PATH="$(pwd):$PATH"|' kmod-sign
         bash kmod-sign myrepo
+        echo "RELEASE_NAME=myrepo" >> "$GITHUB_ENV"
+        echo myrepo 
         
-    - name: Upload OTA File to FTP
-      uses: zhiern/FTP-Deploy-Action@master
-      with:
-        server: ${{ secrets.ftp_address }}
-        username: ${{ secrets.ftp_username }}
-        password: ${{ secrets.ftp_password }}
-        server-dir: opkg/openwrt-24.10/${{ matrix.target }}/
-        local-dir: myrepo/
-        dangerous-clean-slate: true
+    - name: Git push
+      continue-on-error: true
+      run: |
+        git config --local user.name "zhiern"
+        git config --local user.email "2519840456@qq.com"
+        [ -d .git ] && git init
+        git add --all
+        git commit -sm "${{ env.RELEASE_NAME }}"
+        git push "https://${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}" HEAD:${{ matrix.target }}
