@@ -84,17 +84,19 @@ jobs:
         ./ipkg-make-index.sh $REPO_DIR > $REPO_DIR/Packages
         gzip -9c $REPO_DIR/Packages > $REPO_DIR/Packages.gz
 
+    - name: Clean and prepare branch
+      run: |
+        # 删除当前分支的所有文件（保留.git目录）
+        find . -mindepth 1 -maxdepth 1 ! -name '.git' -exec rm -rf {} +
+        
+        # 将日期文件夹中的所有内容移动到当前目录
+        mv $REPO_DIR/* .
+        rm -rf $REPO_DIR
+
     - name: Commit and push changes
       run: |
         git config --local user.name "zhiern"
         git config --local user.email "2519840456@qq.com"
-        
-        # 拉取远程最新更改（强制覆盖本地）
-        git fetch origin ${{ matrix.target }}
-        git reset --hard origin/${{ matrix.target }}
-        
-        # 删除旧的日期目录（如果有）
-        find . -maxdepth 1 -type d -name "20*" -exec rm -rf {} + 2>/dev/null || true
         
         # 添加所有文件
         git add --all
@@ -104,11 +106,14 @@ jobs:
             echo "No changes to commit"
         else
             git commit -m "Update ${{ matrix.target }} packages - $(date +%Y%m%d)"
-            # 强制推送（覆盖远程分支）
+            # 强制推送到目标分支
             git push --force "https://zhiern:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}" HEAD:${{ matrix.target }}
         fi
 
     - name: Verify push result
       run: |
         echo "Successfully pushed to ${{ matrix.target }} branch"
+        echo "Current directory contents:"
         ls -la
+        echo "Packages files:"
+        ls -la Packages*
