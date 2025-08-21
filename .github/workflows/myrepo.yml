@@ -40,6 +40,7 @@ jobs:
       run: |
         wget -O key.tar.gz "https://github.com/zhiern/ZeroWrt/raw/refs/heads/openwrt-24.10/openwrt/patch/key.tar.gz"
         wget -O mkhash "https://github.com/zhiern/Extras-ipk/releases/download/mkhash/mkhash"
+        chmod - R 777 mkhash
         tar -xzvf key.tar.gz
         sed -i 's|export PATH="$TOP/staging_dir/host/bin:$PATH"|export PATH="$(pwd):$PATH"|' kmod-sign
         bash kmod-sign myrepo
