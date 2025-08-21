@@ -24,6 +24,12 @@ jobs:
     - name: Checkout
       uses: actions/checkout@main
 
+    - name: Install usign
+      run: |
+        git clone https://git.kejizero.online/zhao/usign
+        cd usign
+        mkdir build && cd build && cmake .. && make && sudo make install
+
     - name: Download plugin
       run: | 
         if [ "${{ matrix.target }}" = "aarch64_generic" ]; then
