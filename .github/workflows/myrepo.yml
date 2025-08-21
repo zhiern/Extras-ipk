@@ -24,17 +24,6 @@ jobs:
     - name: Checkout
       uses: actions/checkout@main
 
-    - name: Install usign
-      run: |
-        git clone https://git.kejizero.online/zhao/usign
-        cd usign
-        mkdir build && cd build && cmake .. && make && sudo make install
-
-    - name: Download index file
-      run: | 
-        wget -O ipkg-make-index.sh https://raw.githubusercontent.com/zhiern/ipkg-make-index/refs/heads/main/ipkg-make-index.sh
-        chmod +x ipkg-make-index.sh
-
     - name: Download plugin
       run: | 
         if [ "${{ matrix.target }}" = "aarch64_generic" ]; then
